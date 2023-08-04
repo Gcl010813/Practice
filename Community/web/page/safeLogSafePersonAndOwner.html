@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>safeLogSafePersonAndOwner</title>
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+	</head>
+	<body>
+		<div id="app" class="d-flex flex-column">
+			<div class="py-3">
+				<button class="btn btn-sm btn-dark" @click="refresh()">
+					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
+				</button>
+				<button class="btn btn-sm btn-danger" @click="selectremove()">
+					<i class="fa fa-trash"></i>&nbsp;&nbsp;删除
+				</button>
+			</div>
+			<div class="card shadow">
+				<table class="table table-bordered">
+					<tr class="text-center">
+						<th>
+							<input type="checkbox" v-model="selectAll" @change="selectAllRows()">
+						</th>
+						<th>ID</th>
+						<th>安检人员</th>
+						<th>业主</th>
+						<th>业主电话</th>
+						<th>所属小区/商铺/别墅</th>
+						<th>楼栋号/地址</th>
+						<th>备注</th>
+						<th>业主签名</th>
+						<th>是否合格</th>
+						<th>安检时间</th>
+						<th>操作</th>
+					</tr>
+					<tr v-for="(safeLog) in safeLogSafePersonAndOwnerList" :key="safeLog.id" class="text-center">
+						<th>
+							<input type="checkbox" v-model="safeLog.selected" @change="updateSelectAll()">
+						</th>
+						<td>{{safeLog.id}}</td>
+						<td>{{safeLog.safeName}}</td>
+						<td>{{safeLog.ownName}}</td>
+						<td>{{safeLog.ownPhone}}</td>
+						<td>{{safeLog.comAddress}}</td>
+						<td>{{safeLog.houseNumber}}</td>
+						<td>{{safeLog.notes}}</td>
+						<td>
+							<!-- <span v-html="safeLog.ownSignature" style="max-width: 100px; max-height: 50px;"></span> -->
+						</td>
+						<td>
+							{{safeLog.isPass===1?'是':'否'}}
+						</td>
+						<td>{{safeLog.safeTime}}</td>
+						<td>
+							<button class="btn btn-sm btn-success" @click="edit(safeLog.id)">
+								<i class="fa fa-pencil"></i>
+							</button>
+							<button class="btn btn-sm btn-danger" @click="remove(safeLog.id)">
+								<i class="fa fa-trash"></i>
+							</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script>
+			var app = new Vue({
+				el: "#app",
+				data: {
+					safeLogSafePersonAndOwnerList: null,
+					selectAll: false,
+				},
+				methods: {
+					refresh: function() {
+						location.href = "safeLogSafePersonAndOwner.html";
+					},
+					remove: function(ids) {
+						const deleteFlag = confirm("确认删除?");
+						if (deleteFlag) {
+							axios.post("/Community/safeLogDelete?ids=" + ids)
+								.then(function(response) {
+									if (response.data.trim() === 'ok') {
+										app.refresh();
+									} else {
+										alert("删除失败");
+									}
+								}).catch(function(err) {
+									console.log(err);
+								})
+						}
+					},
+					edit: function(id) {
+						localStorage.setItem("safeLog_id", id);
+						location.href = "safeLogEdit.html";
+					},
+					selectAllRows: function() {
+						this.safeLogSafePersonAndOwnerList.forEach(safePerson => {
+							safePerson.selected = this.selectAll;
+						});
+					},
+					updateSelectAll: function() {
+						this.selectAll = this.safeLogSafePersonAndOwnerList.every(safePerson => safePerson.selected);
+					},
+					selectremove: function() {
+						const selectedsafeLog = this.safeLogSafePersonAndOwnerList.filter(safeLog =>
+							safeLog.selected);
+						if (selectedsafeLog.length === 0) {
+							alert("批量选择为空,重新选择");
+						} else {
+							const deleteFlag = confirm("确认删除选中安检记录?");
+							if (deleteFlag) {
+								const ids = selectedsafeLog.map(safeLog => safeLog.id);
+								axios.post("/Community/safeLogDelete?ids=" + ids)
+									.then(function(response) {
+										if (response.data.trim() === 'ok') {
+											app.refresh();
+										} else {
+											alert("删除失败");
+										}
+									}).catch(function(err) {
+										console.log(err);
+									})
+							}
+						}
+					},
+				},
+				created() {
+					var safeName = localStorage.getItem("safe_Name");
+					axios.get("/Community/safeLogSafePersonAndOwner?safeName=" + safeName).then(function(response) {
+						app.safeLogSafePersonAndOwnerList = response.data;
+					}).catch(function(err) {
+						console.log(err);
+					})
+				},
+			});
+		</script>
+	</body>
+</html>

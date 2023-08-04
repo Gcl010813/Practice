@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>safeLogShowAll</title>
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+	</head>
+	<body>
+		<div id="app" class="d-flex flex-column">
+			<div class="py-3">
+				<button class="btn btn-sm btn-dark" @click="refresh()">
+					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
+				</button>
+				<button class="btn btn-sm btn-danger" @click="selectremove()">
+					<i class="fa fa-trash"></i>&nbsp;&nbsp;删除
+				</button>
+			</div>
+			<div class="card shadow">
+				<table class="table table-bordered">
+					<tr class="text-center">
+						<th>
+							<input type="checkbox" v-model="selectAll" @change="selectAllRows()">
+						</th>
+						<th>ID</th>
+						<th>安检人员</th>
+						<th>业主</th>
+						<th>业主电话</th>
+						<th>所属小区/商铺/别墅</th>
+						<th>楼栋号/地址</th>
+						<th>备注</th>
+						<th>业主签名</th>
+						<th>是否合格</th>
+						<th>安检时间</th>
+						<th>操作</th>
+					</tr>
+					<tr v-for="(safeLog) in pageUtil.safeLogList" :key="safeLog.id" class="text-center">
+						<th>
+							<input type="checkbox" v-model="safeLog.selected" @change="updateSelectAll()">
+						</th>
+						<td>{{safeLog.id}}</td>
+						<td>{{safeLog.safeName}}</td>
+						<td>{{safeLog.ownName}}</td>
+						<td>{{safeLog.ownPhone}}</td>
+						<td>{{safeLog.comAddress}}</td>
+						<td>{{safeLog.houseNumber}}</td>
+						<td>{{safeLog.notes}}</td>
+						<td>
+							<!-- <span v-html="safeLog.ownSignature" style="max-width: 100px; max-height: 50px;"></span> -->
+						</td>
+						<td>
+							{{safeLog.isPass===1?'是':'否'}}
+						</td>
+						<td>{{safeLog.safeTime}}</td>
+						<td>
+							<button class="btn btn-sm btn-success" @click="edit(safeLog.id)">
+								<i class="fa fa-pencil"></i>
+							</button>
+							<button class="btn btn-sm btn-danger" @click="remove(safeLog.id)">
+								<i class="fa fa-trash"></i>
+							</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<!-- 分页 -->
+			<div class="d-flex flex-row justify-content-between">
+				<div>
+					<span>总页数：</span><span>{{pageUtil.totalPages}}</span>
+					<span>总条数：</span><span>{{pageUtil.dataCount}}</span>
+				</div>
+				<ul class="pagination pagination-sm">
+					<li class="page-item">
+						<a class="page-link" @click="showStudentPage(1)" style="cursor: pointer;">首页</a>
+					</li>
+					<li class="page-item" v-if="pageUtil.pageNumber > 1">
+						<a class="page-link" @click="showStudentPage(pageUtil.pageNumber - 1)"
+							style="cursor: pointer;">上一页</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link active" href="javascript:;"
+							style="cursor: pointer;">{{ pageUtil.pageNumber }}</a>
+					</li>
+					<li class="page-item" v-if="pageUtil.pageNumber < pageUtil.totalPages">
+						<a class="page-link" @click="showStudentPage(pageUtil.pageNumber + 1)"
+							style="cursor: pointer;">下一页</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link" @click="showStudentPage(pageUtil.totalPages)"
+							style="cursor: pointer;">末页</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<script>
+			var app = new Vue({
+				el: "#app",
+				data: {
+					selectAll: false,
+					pageUtil: {
+						safeLogList: null,
+						dataCount: null,
+						pageSize: 10,
+						totalPages: null,
+						pageNumber: null,
+						beginIndex: 1,
+					},
+				},
+				methods: {
+					refresh: function() {
+						location.href = "safeLogShowAll.html";
+					},
+					showStudentPage: function(pageNumber) {
+						axios.get("/Community/safeLogShowAll?pageNumber=" + pageNumber).then(
+							function(res) {
+								//如果返回的no,表示该用户没有进行登录，跳转到登录界面
+								// if (res.data == "no") {
+								// 	location.href = '../../Login.html';
+								// } else {
+								//如果登录成功，则展示数据
+								app.pageUtil.safeLogList = res.data.list;
+								app.pageUtil.totalPages = res.data.totalPages;
+								app.pageUtil.dataCount = res.data.dataCount;
+								app.pageUtil.pageSize = res.data.pageSize;
+								app.pageUtil.pageNumber = res.data.pageNumber;
+								app.pageUtil.beginIndex = res.data.beginIndex;
+								// }
+							}
+						).catch(function(err) {
+							console.log(err);
+						})
+					},
+					remove: function(ids) {
+						const deleteFlag = confirm("确认删除?");
+						if (deleteFlag) {
+							axios.post("/Community/safeLogDelete?ids=" + ids)
+								.then(function(response) {
+									if (response.data.trim() === 'ok') {
+										app.showStudentPage();
+									} else {
+										alert("删除失败");
+									}
+								}).catch(function(err) {
+									console.log(err);
+								})
+						}
+					},
+					edit: function(id) {
+						localStorage.setItem("safeLog_id", id);
+						location.href = "safeLogEdit.html";
+					},
+					selectAllRows: function() {
+						this.pageUtil.safeLogList.forEach(safeLog => {
+							safeLog.selected = this.selectAll;
+						});
+					},
+					updateSelectAll: function() {
+						this.selectAll = this.pageUtil.safeLogList.every(safeLog => safeLog.selected);
+					},
+					selectremove: function() {
+						const selectedsafeLog = this.pageUtil.safeLogList.filter(safeLog => safeLog.selected);
+						if (selectedsafeLog.length === 0) {
+							alert("批量选择为空,重新选择");
+						} else {
+							const deleteFlag = confirm("确认删除选中安检记录?");
+							if (deleteFlag) {
+								const ids = selectedsafeLog.map(safeLog => safeLog.id);
+								axios.post("/Community/safeLogDelete?ids=" + ids)
+									.then(function(response) {
+										if (response.data.trim() === 'ok') {
+											app.showStudentPage();
+										} else {
+											alert("删除失败");
+										}
+									}).catch(function(err) {
+										console.log(err);
+									})
+							}
+						}
+					},
+				},
+				created() {
+					this.showStudentPage();
+				},
+			});
+		</script>
+	</body>
+</html>

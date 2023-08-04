@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>safePersonShowAll</title>
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+	</head>
+	<body>
+		<div id="app" class="d-flex flex-column">
+			<div class="py-3">
+				<button class="btn btn-sm btn-dark" @click="refresh()">
+					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
+				</button>
+				<button class="btn btn-sm btn-success" @click="add()">
+					<i class="fa fa-plus"></i>&nbsp;&nbsp;添加
+				</button>
+				<button class="btn btn-sm btn-secondary" @click="selectedit()">
+					<i class="fa fa-pencil"></i>&nbsp;&nbsp;编辑
+				</button>
+				<button class="btn btn-sm btn-danger" @click="selectremove()">
+					<i class="fa fa-trash"></i>&nbsp;&nbsp;删除
+				</button>
+				<button class="btn btn-sm btn-primary" @click="more()">
+					<i class="fa fa-download"></i>&nbsp;&nbsp;更多
+				</button>
+			</div>
+			<div class="card shadow">
+				<table class="table table-bordered">
+					<tr class="text-center">
+						<th>
+							<input type="checkbox" v-model="selectAll" @change="selectAllRows()">
+						</th>
+						<th>ID</th>
+						<th>用户名</th>
+						<th>真实姓名</th>
+						<th>手机号</th>
+						<th>创建时间</th>
+						<th>更新时间</th>
+						<th>状态</th>
+						<th>操作</th>
+					</tr>
+					<tr v-for="(safePerson) in pageUtil.safePersonList" :key="safePerson.id" class="text-center">
+						<th>
+							<input type="checkbox" v-model="safePerson.selected" @change="updateSelectAll()">
+						</th>
+						<td>{{safePerson.id}}</td>
+						<td>{{safePerson.safeNick}}</td>
+						<td>{{safePerson.safeName}}</td>
+						<td>{{safePerson.safePhone}}</td>
+						<td>{{safePerson.createTime}}</td>
+						<td>{{safePerson.updateTime}}</td>
+						<td>
+							<span :class="safePerson.status === 1 ? 'text-success' : 'text-gray'">
+								<i class="fa fa-circle"></i>
+								<span>{{safePerson.status===1?"正常":"隐藏"}}</span>
+							</span>
+						</td>
+						<td>
+							<button class="btn btn-sm btn-success" @click="edit(safePerson.id)">
+								<i class="fa fa-pencil"></i>
+							</button>
+							<button class="btn btn-sm btn-danger" @click="remove(safePerson.id)">
+								<i class="fa fa-trash"></i>
+							</button>
+							<button class="btn btn-sm btn-warning" @click="log(safePerson.safeName)">
+								<i class="fa fa-list"></i>安检记录
+							</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<!-- 分页 -->
+			<div class="d-flex flex-row justify-content-between">
+				<div>
+					<span>总页数：</span><span>{{pageUtil.totalPages}}</span>
+					<span>总条数：</span><span>{{pageUtil.dataCount}}</span>
+				</div>
+				<ul class="pagination pagination-sm">
+					<li class="page-item">
+						<a class="page-link" @click="showStudentPage(1)" style="cursor: pointer;">首页</a>
+					</li>
+					<li class="page-item" v-if="pageUtil.pageNumber > 1">
+						<a class="page-link" @click="showStudentPage(pageUtil.pageNumber - 1)"
+							style="cursor: pointer;">上一页</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link active" href="javascript:;"
+							style="cursor: pointer;">{{ pageUtil.pageNumber }}</a>
+					</li>
+					<li class="page-item" v-if="pageUtil.pageNumber < pageUtil.totalPages">
+						<a class="page-link" @click="showStudentPage(pageUtil.pageNumber + 1)"
+							style="cursor: pointer;">下一页</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link" @click="showStudentPage(pageUtil.totalPages)"
+							style="cursor: pointer;">末页</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<script>
+			var app = new Vue({
+				el: "#app",
+				data: {
+					selectAll: false,
+					pageUtil: {
+						safePersonList: null,
+						dataCount: null,
+						pageSize: 10,
+						totalPages: null,
+						pageNumber: null,
+						beginIndex: 1,
+					},
+				},
+				methods: {
+					refresh: function() {
+						location.href = "safePersonShowAll.html";
+					},
+					showStudentPage: function(pageNumber) {
+						axios.get("/Community/safePersonShowAll?pageNumber=" + pageNumber).then(
+							function(res) {
+								//如果返回的no,表示该用户没有进行登录，跳转到登录界面
+								// if (res.data == "no") {
+								// 	location.href = '../../Login.html';
+								// } else {
+								//如果登录成功，则展示数据
+								app.pageUtil.safePersonList = res.data.list;
+								app.pageUtil.totalPages = res.data.totalPages;
+								app.pageUtil.dataCount = res.data.dataCount;
+								app.pageUtil.pageSize = res.data.pageSize;
+								app.pageUtil.pageNumber = res.data.pageNumber;
+								app.pageUtil.beginIndex = res.data.beginIndex;
+								// }
+							}
+						).catch(function(err) {
+							console.log(err);
+						})
+					},
+					add: function() {
+						location.href = "safePersonAdd.html";
+					},
+					remove: function(ids) {
+						const deleteFlag = confirm("确认删除?");
+						if (deleteFlag) {
+							axios.post("/Community/safePersonDelete?ids=" + ids)
+								.then(function(response) {
+									if (response.data.trim() === 'ok') {
+										app.showStudentPage();
+									} else {
+										alert("删除失败");
+									}
+								}).catch(function(err) {
+									console.log(err);
+								})
+						}
+					},
+					edit: function(id) {
+						localStorage.setItem("safePerson_id", id);
+						location.href = "safePersonEdit.html";
+					},
+					log: function(safeName) {
+						localStorage.setItem("safe_Name", safeName);
+						location.href = "safeLogSafePersonAndOwner.html";
+					},
+					selectAllRows: function() {
+						this.pageUtil.safePersonList.forEach(safePerson => {
+							safePerson.selected = this.selectAll;
+						});
+					},
+					updateSelectAll: function() {
+						this.selectAll = this.pageUtil.safePersonList.every(safePerson => safePerson.selected);
+					},
+					selectremove: function() {
+						const selectedsafePerson = this.pageUtil.safePersonList.filter(safePerson => safePerson
+							.selected);
+						if (selectedsafePerson.length === 0) {
+							alert("批量选择为空,重新选择");
+						} else {
+							const deleteFlag = confirm("确认删除选中安全员?");
+							if (deleteFlag) {
+								const ids = selectedsafePerson.map(safePerson => safePerson.id);
+								axios.post("/Community/safePersonDelete?ids=" + ids)
+									.then(function(response) {
+										if (response.data.trim() === 'ok') {
+											app.showStudentPage();
+										} else {
+											alert("删除失败");
+										}
+									}).catch(function(err) {
+										console.log(err);
+									})
+							}
+						}
+					},
+				},
+				created() {
+					this.showStudentPage();
+				},
+			});
+		</script>
+	</body>
+</html>

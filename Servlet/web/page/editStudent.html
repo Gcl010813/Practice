@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>editStudent</title>
+  <link rel="stylesheet" href="../bootstrap-5.3.0-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../font-awesome-4.7.0/css/font-awesome.css">
+  <script src="../js/vue.js"></script>
+  <script src="../js/axios-0.21.0.js"></script>
+  <script src="../js/qs-6.9.4.min.js"></script>
+</head>
+<body>
+<form id="form" class="d-flex flex-row justify-content-center">
+  <div class="col-8 shadow">
+    <h3 class="card-header text-center">学生信息详情</h3>
+    <table class="table">
+      <!-- 头像 -->
+      <tr>
+        <td colspan="2" style="text-align: center;">
+          <i class="fa fa-user fa-3x"></i>
+        </td>
+      </tr>
+      <!-- id -->
+      <tr>
+        <td class="bg-light-subtle text-center align-middle">
+          <span><i class="fa fa-id-card"></i></span>&nbsp;&nbsp;ID
+        </td>
+        <td>
+          <input type="text" class="form-control" readonly="readonly" name="id"
+                 v-model="stu.id">
+        </td>
+      </tr>
+      <!-- 昵称 -->
+      <tr>
+        <td class="bg-light-subtle text-center align-middle">
+          <span><i class="fa fa-user-circle"></i></span>&nbsp;&nbsp;昵称
+        </td>
+        <td>
+          <input type="text" class="form-control" name="nickName" placeholder="请输入昵称"
+                 v-model="stu.nickName">
+        </td>
+      </tr>
+      <!-- 姓名-->
+      <tr>
+        <td class="bg-light-subtle  text-center align-middle"><span><i
+                class="fa fa-user"></i></span>&nbsp;&nbsp;姓名
+        </td>
+        <td>
+          <input type="text" class="form-control" name="name" placeholder="请输入姓名"
+                 v-model="stu.name">
+        </td>
+      </tr>
+      <!-- 手机 -->
+      <tr>
+        <td class="bg-light-subtle  text-center align-middle">
+          <span><i class="fa fa-phone"></i></span>&nbsp;&nbsp;手机号
+        </td>
+        <td>
+          <input type="tel" class="form-control" name="mobile" placeholder="请输入手机号"
+                 v-model="stu.mobile">
+        </td>
+      </tr>
+      <!-- 性别 -->
+      <tr>
+        <td class="bg-light-subtle  text-center align-middle">
+          <span><i class="fa fa-transgender"></i></span>&nbsp;&nbsp;性别
+        </td>
+        <td class="text-center align-middle">
+          <input type="radio" class="form-check-label" name="gender" value="1"
+                 v-model="stu.gender">&nbsp;&nbsp;男&nbsp;&nbsp;
+          <input type="radio" class="form-check-label" name="gender" value="0"
+                 v-model="stu.gender">&nbsp;&nbsp;女
+        </td>
+      </tr>
+      <!-- 余额 -->
+      <tr>
+        <td class="bg-light-subtle  text-center align-middle">
+          <span><i class="fa fa-rmb"></i></span>&nbsp;&nbsp;余额
+        </td>
+        <td>
+          <input type="number" class="form-control" name="balance" placeholder="请输入余额"
+                 v-model="stu.balance">
+        </td>
+      </tr>
+      <!-- 状态 -->
+      <tr>
+        <td class="bg-light-subtle  text-center align-middle">
+          <span><i class="fa fa-spinner"></i></span>&nbsp;&nbsp;状态
+        </td>
+        <td class="text-center">
+          <input type="radio" class="form-check-label" name="status" value="1"
+                 v-model="stu.status">&nbsp;&nbsp;正常&nbsp;&nbsp;
+          <input type="radio" class="form-check-label" name="status" value="0"
+                 v-model="stu.status">&nbsp;&nbsp;冻结
+        </td>
+      </tr>
+      <!-- 时间 -->
+      <tr>
+        <td class="bg-light-subtle  text-center align-middle">
+          <span><i class="fa fa-calendar"></i></span>&nbsp;&nbsp;时间
+        </td>
+        <td>
+          <input type="text" class="form-control" readonly="readonly" name="createTime"
+                 v-model="stu.createTime">
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align: center;">
+          <input type="button" class="form-control btn btn-primary" value="保存修改" @click="update()">
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align: center;">
+          <input type="button" class="form-control btn  btn-success" value="返回列表" @click="back()">
+        </td>
+      </tr>
+    </table>
+  </div>
+</form>
+<script>
+  var app = new Vue({
+    el: "#form",
+    data: {
+      stu: {},
+    },
+    methods: {
+      update:function (){
+        axios.post("/Servlet/updateStudent",Qs.stringify(this.stu))
+          .then(function(response){
+                  if (response.data.trim()==="ok"){
+                    location.href="showAllStudent.html";
+                  }
+                  else {
+                    alert("修改失败");
+                  }
+        }).catch(function (err){
+          console.log(err);
+        })
+      },
+      back:function (){
+        location.href="showAllStudent.html";
+      }
+    },
+    created(){
+      const id = localStorage.getItem("id");
+      axios.get("/Servlet/editStudent?id="+id)
+        .then(function(response){
+          console.log(response.data);
+            app.stu = response.data;
+        }).catch(function (err){
+            console.log(err);
+      })
+    },
+  });
+</script>
+</body>
+</html>

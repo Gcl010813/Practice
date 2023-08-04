@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>communityShowAll</title>
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+		<style>
+			td {
+				text-align: center;
+			}
+
+			/* 样式 */
+			/* 			.modal-overlay {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.5);
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.modal-container {
+				background-color: #fff;
+				border-radius: 5px;
+				padding: 30px 10px 10px 10px;
+			}
+
+			.modal-content {
+				position: relative;
+				width: 100%;
+				height: 100%;
+			}
+
+			.modal-close {
+				position: absolute;
+				top: -15px;
+				right: 0;
+				background-color: black;
+				cursor: pointer;
+			} */
+		</style>
+	</head>
+	<body>
+		<div id="app" class="d-flex flex-column">
+			<table class="table table-bordered col-6">
+				<tr class="text-center">
+					<td class="align-middle">ID</td>
+					<td>
+						<input type="number" class="form-control" placeholder="ID" v-model="searchCom.id">
+					</td>
+					<td class="align-middle">小区名称</td>
+					<td>
+						<input type="text" class="form-control" placeholder="小区名称" v-model="searchCom.comName">
+					</td>
+					<td class="align-middle">商铺类型</td>
+					<td>
+						<select class="form-control" v-model="searchCom.comType">
+							<option value="" selected>--选择--</option>
+							<option value="住宅">住宅</option>
+							<option value="商铺">商铺</option>
+							<option value="别墅">别墅</option>
+						</select>
+					</td>
+					<td class="align-middle">创建时间</td>
+					<td>
+						<select class="form-control" v-model="searchCom.createTime">
+							<option value="" selected>--选择--</option>
+							<option value="today">今天</option>
+							<option value="yesterday">昨天</option>
+							<option value="lastSevenDay">最近7天</option>
+							<option value="lastThirtyDay">最近30天</option>
+							<option value="currentMonth">本月</option>
+							<option value="lastMonth">上月</option>
+							<option value="define">自定义</option>
+						</select>
+					</td>
+				</tr>
+				<tr class="text-center">
+					<td class="align-middle">更新时间</td>
+					<td>
+						<select class="form-control" v-model="searchCom.updateTime">
+							<option value="" selected>--选择--</option>
+							<option value="today">今天</option>
+							<option value="yesterday">昨天</option>
+							<option value="lastSevenDay">最近7天</option>
+							<option value="lastThirtyDay">最近30天</option>
+							<option value="currentMonth">本月</option>
+							<option value="lastMonth">上月</option>
+							<option value="define">自定义</option>
+						</select>
+					</td>
+					<td colspan="6">
+						<button class="btn btn-success" @click="search()">提交</button>
+						<button class="btn btn-secondary" @click="reset()">重置</button>
+					</td>
+				</tr>
+			</table>
+
+
+			<div class="py-3">
+				<button class="btn btn-sm btn-dark" @click="refresh()">
+					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
+				</button>
+				<button class="btn btn-sm btn-success" @click="add()">
+					<i class=" fa fa-plus"></i>&nbsp;&nbsp;添加
+				</button>
+				<button class="btn btn-sm btn-secondary" @click="selectedit()">
+					<i class="fa fa-pencil"></i>&nbsp;&nbsp;编辑
+				</button>
+				<button class="btn btn-sm btn-danger" @click="selectremove()">
+					<i class="fa fa-trash"></i>&nbsp;&nbsp;删除
+				</button>
+				<button class="btn btn-sm btn-primary" @click="setting()">
+					<i class="fa fa-list"></i>&nbsp;&nbsp;批量设置安检人员
+				</button>
+			</div>
+			<div class="card shadow">
+				<table class="table table-bordered">
+					<tr class="text-center">
+						<th>
+							<input type="checkbox" v-model="selectAll" @change="selectAllRows">
+						</th>
+						<th>ID</th>
+						<th>小区名称</th>
+						<th>商铺类型</th>
+						<th>安检人员</th>
+						<th>创建时间</th>
+						<th>更新时间</th>
+						<th>操作</th>
+					</tr>
+					<tr v-for="community in pageUtil.communityList" :key="community.id" class="text-center">
+						<th>
+							<input type="checkbox" v-model="community.selected" @change="updateSelectAll">
+						</th>
+						<td>{{community.id}}</td>
+						<td>{{community.comName}}</td>
+						<td>{{community.comType}}</td>
+						<td>{{community.safePerson}}</td>
+						<td>{{community.createTime}}</td>
+						<td>{{community.updateTime}}</td>
+						<td>
+							<button class="btn btn-sm btn-success" @click="edit(community.id)">
+								<i class="fa fa-pencil"></i>
+							</button>
+							<button class="btn btn-sm btn-danger" @click="remove(community.id)">
+								<i class="fa fa-trash"></i>
+							</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<!-- 分页 -->
+			<div class="d-flex flex-row justify-content-between">
+				<div>
+					<span>总页数：</span><span>{{pageUtil.totalPages}}</span>
+					<span>总条数：</span><span>{{pageUtil.dataCount}}</span>
+				</div>
+				<ul class="pagination pagination-sm">
+					<li class="page-item">
+						<a class="page-link" @click="showStudentPage(1)">首页</a>
+					</li>
+					<li class="page-item" v-if="pageUtil.pageNumber > 1">
+						<a class="page-link" @click="showStudentPage(pageUtil.pageNumber - 1)">上一页</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link active" href="#">{{ pageUtil.pageNumber }}</a>
+					</li>
+					<li class="page-item" v-if="pageUtil.pageNumber < pageUtil.totalPages">
+						<a class="page-link" @click="showStudentPage(pageUtil.pageNumber + 1)">下一页</a>
+					</li>
+					<li class="page-item">
+						<a class="page-link" @click="showStudentPage(pageUtil.totalPages)">末页</a>
+					</li>
+				</ul>
+			</div>
+			<!-- 悬浮框 -->
+			<!-- 			<div v-if="isShowAdd" class="modal-overlay">
+				<div class="modal-container col-5 h-50">
+					<div class="modal-content">
+
+						<button class="btn btn-dark modal-close" @click="hideAddModal">
+							<i class="fa fa-times"></i>
+						</button>
+
+						<iframe :src="addHtml" class="w-100 h-100" frameborder="0" scrolling="no"></iframe>
+					</div>
+				</div>
+			</div> -->
+		</div>
+		<script>
+			var app = new Vue({
+				el: "#app",
+				data: {
+					// isShowAdd: false,
+					// addHtml: "communityAdd.html",
+					selectAll: false,
+					searchCom: {
+						id: "",
+						comName: "",
+						comType: "",
+						createTime: "",
+						updateTime: ","
+					},
+					pageUtil: {
+						communityList: null,
+						dataCount: null,
+						pageSize: 10,
+						totalPages: null,
+						pageNumber: 1,
+						beginIndex: null,
+					},
+				},
+				methods: {
+					// showAddModal: function() {
+					// 	app.isShowAdd = true;
+					// },
+					// hideAddModal: function() {
+					// 	app.isShowAdd = false;
+					// },
+					showStudentPage: function(pageNumber) {
+						axios.get("/Community/communityShowAll?pageNumber=" + pageNumber).then(
+							function(res) {
+								//如果返回的no,表示该用户没有进行登录，跳转到登录界面
+								// if (res.data == "no") {
+								// 	location.href = '../../Login.html';
+								// } else {
+								//如果登录成功，则展示数据
+								app.pageUtil.communityList = res.data.list;
+								app.pageUtil.totalPages = res.data.totalPages;
+								app.pageUtil.dataCount = res.data.dataCount;
+								app.pageUtil.pageSize = res.data.pageSize;
+								app.pageUtil.pageNumber = res.data.pageNumber;
+								app.pageUtil.beginIndex = res.data.beginIndex;
+								// }
+							}
+						).catch(function(err) {
+							console.log(err);
+						})
+					},
+					refresh: function() {
+						location.href = "communityShowAll.html";
+					},
+					remove: function(ids) {
+						const deleteFlag = confirm("确认删除?");
+						if (deleteFlag) {
+							axios.post("/Community/communityDelete?ids=" + ids)
+								.then(function(response) {
+									if (response.data.trim() === 'ok') {
+										app.showStudentPage();
+									} else {
+										alert("删除失败");
+									}
+								}).catch(function(err) {
+									console.log(err);
+								})
+						}
+					},
+					add: function() {
+						location.href = "communityAdd.html";
+					},
+					edit: function(id) {
+						localStorage.setItem("community_id", id);
+						location.href = "communityEdit.html";
+					},
+					selectAllRows: function() {
+						this.pageUtil.communityList.forEach(community => {
+							community.selected = this.selectAll;
+						});
+					},
+					updateSelectAll: function() {
+						this.selectAll = this.pageUtil.communityList.every(community => community.selected);
+					},
+					selectremove: function() {
+						const selectedCommunity = this.pageUtil.communityList.filter(community => community
+							.selected);
+						if (selectedCommunity.length === 0) {
+							alert("批量选择为空,重新选择");
+						} else {
+							const deleteFlag = confirm("确认删除选中小区?");
+							if (deleteFlag) {
+								const ids = selectedCommunity.map(community => community.id);
+								axios.post("/Community/communityDelete?ids=" + ids)
+									.then(function(response) {
+										if (response.data.trim() === 'ok') {
+											app.showStudentPage();
+										} else {
+											alert("删除失败");
+										}
+									}).catch(function(err) {
+										console.log(err);
+									})
+							}
+						}
+					},
+					search: function() {
+						axios.post("/Community/communitySearch", Qs.stringify(this.searchCom)).then(function(
+							response) {
+							app.pageUtil.communityList = response.data;
+						}).catch(function(err) {
+							console.log(err);
+						})
+					},
+					reset: function() {
+						app.searchCom = "";
+						this.refresh();
+					},
+				},
+				created() {
+					this.showStudentPage();
+				},
+			});
+		</script>
+	</body>
+</html>

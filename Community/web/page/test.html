@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+	</head>
+	<body>
+		<ul id="app">
+			<li v-for="option in selectedOptions" class="selected_tag" :itemvalue="option">
+				{{ option }}
+				<span class="tag_close" @click="removeOption(option)"></span>
+			</li>
+			<li class="input_box">
+				<input id="c-housesecurity_staff_ids_text" data-multip="true" data-field="truename"
+					data-source="housesecurity" @keydown.enter="addOption" v-model="newOption">
+			</li>
+		</ul>
+		<script>
+			var app = new Vue({
+				data: {
+					selectedOptions: ['1', '2', '3'],
+					newOption: "",
+				},
+				methods: {
+					addOption() {
+						if (this.newOption.trim() !== "") {
+							this.selectedOptions.push(this.newOption);
+							this.newOption = "";
+						}
+					},
+					removeOption(option) {
+						const index = this.selectedOptions.indexOf(option);
+						if (index !== -1) {
+							this.selectedOptions.splice(index, 1);
+						}
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

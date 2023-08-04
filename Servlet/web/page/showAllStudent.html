@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>showAllStudent</title>
+  <link rel="stylesheet" href="../bootstrap-5.3.0-dist/css/bootstrap.css">
+  <link rel="stylesheet" href="../font-awesome-4.7.0/css/font-awesome.css">
+  <script src="../js/vue.js"></script>
+  <script src="../js/axios-0.21.0.js"></script>
+  <script src="../js/qs-6.9.4.min.js"></script>
+</head>
+<body>
+<div id="app" class="d-flex flex-column p-2">
+  <!-- 搜索框和按钮 -->
+  <div class="card shadow py-2">
+    <table>
+      <tr>
+        <td class="text-center">昵称：</td>
+        <td><input class="form-control" type="text" v-model="searchInfo.nickName"></td>
+        <td class="text-center">姓名：</td>
+        <td><input class="form-control" type="text" v-model="searchInfo.name"></td>
+        <td class="text-center">手机号：</td>
+        <td><input class="form-control" type="text" v-model="searchInfo.mobile"></td>
+        <td><button class="btn btn-success" @click="searchStudent()"><i
+                class="fa fa-search"></i>搜索</button></td>
+        <td><button class="btn btn-success" @click="showAll()"><i class="fa fa-list"></i>返回列表</button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="8">
+          <button class="btn btn-success col-12" @click="add()">添加</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <!-- 课程表格 -->
+  <div class="card shadow py-2">
+    <table class="table table-bordered">
+      <tr class="text-center">
+        <th>ID</th>
+        <th>昵称</th>
+        <th>姓名</th>
+        <th>手机号</th>
+        <th>性别</th>
+        <th>余额</th>
+        <th>注册时间</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr>
+      <tr v-for="(stu) in studentList" class="text-center">
+        <td>{{stu.id}}</td>
+        <td>{{stu.nickName}}</td>
+        <td>{{stu.name}}</td>
+        <td>{{stu.mobile}}</td>
+        <td>
+          <span>{{stu.gender == "1"?'男':'女'}}</span>
+        </td>
+        <td>{{stu.balance}}</td>
+        <td>{{stu.createTime}}</td>
+        <td>
+							<span
+                                    :class="stu.status=='1'?'badge bg-success':'badge bg-warning'">{{stu.status == "1"?'正常':'冻结'}}</span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary" @click="swap(stu.id)">切换状态</button>
+          <button class="btn btn-sm btn-outline-primary" @click="edit(stu.id)">编辑</button>
+          <button class="btn btn-sm btn-outline-primary" @click="remove(stu.id)">删除</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<script>
+  let app = new Vue({
+    el: "#app",
+    data: {
+      studentList: null,
+      searchInfo: {
+        nickName: "",
+        name: "",
+        mobile: "",
+      }
+    },
+    methods: {
+      searchStudent: function() {
+        axios.post("/Servlet/searchStudent", Qs.stringify(this.searchInfo))
+                .then(function(response) {
+                  app.studentList = response.data;
+                }).catch(function(err) {
+          console.log(err);
+        })
+      },
+      showAll: function() {
+        axios.get("/Servlet/showAllStudent")
+                .then(function(response) {
+                  app.studentList = response.data
+                }).catch(function(err) {
+          console.log(err);
+        })
+      },
+      swap: function(id) {
+        axios.get("/Servlet/editStudent?id=" + id).then(function(response) {
+          response.data.status = (response.data.status === 1 ? 0 : 1);
+          axios.post("/Servlet/updateStudent", Qs.stringify(response.data)).then(function(
+                  response) {
+            if (response.data.trim() === "ok") {
+              location.href = "showAllStudent.html";
+            } else {
+              alert("状态切换失败");
+            }
+          }).catch(function(err) {
+            console.log(err);
+          })
+        }).catch(function(err) {
+          console.log(err);
+        })
+      },
+      add: function() {
+        location.href = "addStudent.html"
+      },
+      edit: function(id) {
+        localStorage.setItem("id", id);
+        location.href = "editStudent.html";
+      },
+      remove: function(id) {
+        const deleteFlag = confirm("是否要删除?");
+        if (deleteFlag) {
+          axios.post("/Servlet/deleteStudent?id=" + id)
+                  .then(function(response) {
+                    if (response.data.trim() === 'ok') {
+                      alert("删除成功");
+                      app.showAll();
+                    } else {
+                      alert("删除失败");
+                    }
+                  }).catch(function(err) {
+            console.log(err);
+          })
+        }
+      },
+    },
+    created() {
+      this.showAll();
+    },
+  });
+</script>
+</body>
+</html>

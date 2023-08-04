@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>safePersonEdit</title>
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+		<style>
+			td {
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="form" class="d-flex flex-row justify-content-center">
+			<div class="col-5">
+				<table class="table table-bordered">
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">ID</td>
+						<td>
+							<input type="text" class="form-control" readonly="readonly" v-model="safePerson.id">
+						</td>
+					</tr>
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">用户名</td>
+						<td>
+							<input type="text" class="form-control" v-model="safePerson.safeNick">
+						</td>
+					</tr>
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">真实姓名</td>
+						<td>
+							<input type="text" class="form-control" v-model="safePerson.safeName">
+						</td>
+					</tr>
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">手机号</td>
+						<td>
+							<input type="tel" class="form-control" v-model="safePerson.safePhone">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<input type="button" value="更新" class="form-control btn btn-success" @click="update()">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<input type="button" value="返回列表" class="form-control btn btn-secondary" @click="back()">
+						</td>
+					</tr>
+				</table>
+			</div>
+		</form>
+		<script>
+			var app = new Vue({
+				el: "#form",
+				data: {
+					safePerson: {
+						id: "",
+						safeNick: "",
+						safeName: "",
+						safePhone: "",
+						status: "",
+					},
+				},
+				methods: {
+					update: function() {
+						axios.post("/Community/safePersonUpdate", Qs.stringify(this.safePerson)).then(function(
+							response) {
+							if (response.data.trim() === "ok") {
+								location.href = "safePersonShowAll.html";
+							} else {
+								alert("修改失败");
+							}
+						}).catch(function(err) {
+							console.log(err);
+						})
+					},
+					back: function() {
+						location.href = "safePersonShowAll.html";
+					},
+				},
+				created() {
+					const id = localStorage.getItem("safePerson_id");
+					axios.get("/Community/safePersonEdit?id=" + id).then(function(response) {
+						app.safePerson = response.data;
+					}).catch(function(err) {
+						console.log(err);
+					})
+				},
+			});
+		</script>
+	</body>
+</html>

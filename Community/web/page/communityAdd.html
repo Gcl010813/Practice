@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>communityAdd</title>
+		<link rel="stylesheet" href="../css/common.css">
+		<link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+		<link rel="stylesheet" href="../font/css/font-awesome.css">
+		<script src="../js/vue.js"></script>
+		<script src="../js/qs-6.9.4.js"></script>
+		<script src="../js/axios-0.21.0.js"></script>
+		<style>
+			td {
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<form id="form" class="d-flex flex-row justify-content-center">
+			<div>
+				<table class="table table-bordered">
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">小区名称</td>
+						<td>
+							<input type="text" class="form-control" v-model="community.comName">
+						</td>
+					</tr>
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">商铺类型</td>
+						<td>
+							<select class="form-control" v-model="community.comType">
+								<option value="" selected>--选择--</option>
+								<option value="住宅">住宅</option>
+								<option value="商铺">商铺</option>
+								<option value="别墅">别墅</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td class="bg-light-subtle text-center align-middle">安检人员</td>
+						<td>
+							<select class="form-control" v-model="community.safePerson">
+								<option value="" selected>--选择--</option>
+								<option v-for="(safeName) in safeNameList" :value="safeName">{{safeName}}</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<input type="button" value="添加" class="form-control btn btn-success" @click="add()">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<input type="button" value="返回列表" class="form-control btn btn-secondary" @click="back()">
+						</td>
+					</tr>
+				</table>
+			</div>
+		</form>
+		<script>
+			var app = new Vue({
+				el: "#form",
+				data: {
+					community: {
+						comName: "",
+						comType: "",
+						safePerson: "",
+					},
+					safeNameList: null,
+				},
+				methods: {
+					add: function() {
+						axios.post("/Community/communityAdd", Qs.stringify(this.community)).then(function(
+							response) {
+							if (response.data.trim() === "ok") {
+								window.parent.postMessage("addTnfo", "back");
+							} else {
+								alert("添加失败");
+							}
+						}).catch(function(err) {
+							console.log(err);
+						})
+					},
+					back: function() {
+						window.parent.postMessage("addTnfo", "back");
+					},
+				},
+				created() {
+					axios.get("/Community/communityAddSafePersonName").then(function(response) {
+						app.safeNameList = response.data.slice(1, -1).split(", ");
+					}).catch(function(err) {
+						console.log(err);
+					});
+				}
+			});
+		</script>
+	</body>
+</html>
