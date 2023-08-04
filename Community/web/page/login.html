@@ -13,11 +13,25 @@
 			input::-webkit-input-placeholder {
 				text-align: center;
 			}
+
+			body {
+				position: relative;
+				background: url(../image/bg.jpg) no-repeat center;
+			}
+
+			form {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				width: 100%;
+				border-radius: 10%;
+			}
 		</style>
 	</head>
 	<body>
 		<form id="form" class="d-flex flex-row justify-content-center">
-			<div class="col-4 shadow">
+			<div class="col-3 shadow radius">
 				<table class="table table-bordered">
 					<tr>
 						<td colspan="2" class="bg-light-subtle text-center align-middle">
@@ -26,7 +40,7 @@
 					</tr>
 					<tr>
 						<td colspan="2" class="bg-light-subtle text-center align-middle">
-							<div>账号:xiaoGuo&nbsp;&nbsp;密码:0813</div>
+							<span><i>账号:</i>&nbsp;xiaoGuo&nbsp;&nbsp;<i>密码:</i>&nbsp;0813</span>
 						</td>
 					</tr>
 					<!-- 用户名 -->

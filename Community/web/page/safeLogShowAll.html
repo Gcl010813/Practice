@@ -12,6 +12,55 @@
 	</head>
 	<body>
 		<div id="app" class="d-flex flex-column">
+			<!-- 搜索 -->
+			<table class="table table-bordered" v-show="isShowSearchBox">
+				<tr>
+					<td class="bg-light-subtle text-center align-middle">安检人员</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="number" class="form-control" placeholder="安检人员ID"
+							v-model="searchSafeLog.safePersonId">
+					</td>
+					<td class="bg-light-subtle text-center align-middle">业主</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="number" class="form-control" placeholder="业主ID" v-model="searchSafeLog.ownName">
+					</td>
+					<td class="bg-light-subtle text-center align-middle">所属小区/商铺/别墅</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<select class="form-control" v-model="searchSafeLog.comAddress">
+							<option value="" selected>--选择--</option>
+							<option v-for="(comAddress) in comAddressList" :value="comAddress">{{comAddress}}
+							</option>
+						</select>
+					</td>
+					<td class="bg-light-subtle text-center align-middle">是否合格</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="radio" name="isSafe" value="1" class="form-check-inline"
+							v-model="searchSafeLog.isPass">合格&nbsp;
+						<input type="radio" name="isSafe" value="0" class="form-check-inline"
+							v-model="searchSafeLog.isPass">不合格
+					</td>
+				</tr>
+				<tr>
+					<td class="bg-light-subtle text-center align-middle">安检时间</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<select class="form-control" v-model="searchSafeLog.safeTime">
+							<option value="" selected>--选择--</option>
+							<option value="today">今天</option>
+							<option value="yesterday">昨天</option>
+							<option value="lastSevenDay">最近7天</option>
+							<option value="lastThirtyDay">最近30天</option>
+							<option value="currentMonth">本月</option>
+							<option value="lastMonth">上月</option>
+							<option value="define">自定义</option>
+						</select>
+					</td>
+					<td colspan="6" class="bg-light-subtle text-center align-middle">
+						<button class="btn btn-success" @click="search()">提交</button>
+						<button class="btn btn-secondary" @click="reset()">重置</button>
+					</td>
+				</tr>
+			</table>
+			<!-- 功能 -->
 			<div class="py-3">
 				<button class="btn btn-sm btn-dark" @click="refresh()">
 					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
@@ -19,7 +68,11 @@
 				<button class="btn btn-sm btn-danger" @click="selectremove()">
 					<i class="fa fa-trash"></i>&nbsp;&nbsp;删除
 				</button>
+				<button class="btn btn-sm btn-info" @click="searchBox()">
+					<i class="fa fa-search"></i>&nbsp;&nbsp;搜索
+				</button>
 			</div>
+			<!-- 显示 -->
 			<div class="card shadow">
 				<table class="table table-bordered">
 					<tr class="text-center">
@@ -101,6 +154,8 @@
 				el: "#app",
 				data: {
 					selectAll: false,
+					comAddressList: null,
+					isShowSearchBox: false,
 					pageUtil: {
 						safeLogList: null,
 						dataCount: null,
@@ -109,8 +164,29 @@
 						pageNumber: null,
 						beginIndex: 1,
 					},
+					searchSafeLog: {
+						safePersonId: "",
+						ownName: "",
+						comAddress: "",
+						isPass: "",
+						safeTime: "",
+					},
 				},
 				methods: {
+					searchBox: function() {
+						axios.get("/Community/ownerAddCommunityName").then(function(response) {
+							app.comAddressList = response.data.slice(1, -1).split(", ");
+						}).catch(function(err) {
+							console.log(err);
+						});
+						this.isShowSearchBox = !this.isShowSearchBox;
+					},
+					search: function() {
+						alert("待实现");
+					},
+					reset: function() {
+						app.searchSafeLog = "";
+					},
 					refresh: function() {
 						location.href = "safeLogShowAll.html";
 					},

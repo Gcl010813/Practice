@@ -19,10 +19,6 @@ import java.util.List;
 public class OwnerShowAllServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("utf-8");
-        response.setCharacterEncoding("utf-8");
-        response.setContentType("text/html;charset=utf-8");
-
         //        接受页面传递的当前页的数据
         String pageNumberStr = request.getParameter("pageNumber");
         int pageNumber;

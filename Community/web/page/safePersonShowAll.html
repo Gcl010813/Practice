@@ -12,6 +12,67 @@
 	</head>
 	<body>
 		<div id="app" class="d-flex flex-column">
+			<!-- 搜索 -->
+			<table class="table table-bordered" v-show="isShowSearchBox">
+				<tr>
+					<td class="bg-light-subtle text-center align-middle">ID</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="number" class="form-control" placeholder="ID" v-model="searchSafePerson.id">
+					</td>
+					<td class="bg-light-subtle text-center align-middle">用户名</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="text" class="form-control" placeholder="用户名" v-model="searchSafePerson.safeNick">
+					</td>
+					<td class="bg-light-subtle text-center align-middle">真实姓名</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="text" class="form-control" placeholder="真实姓名" v-model="searchSafePerson.safeName">
+					</td>
+					<td class="bg-light-subtle text-center align-middle">手机号</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="tel" class="form-control" placeholder="手机号" v-model="searchSafePerson.safePhone">
+					</td>
+				</tr>
+				<tr>
+					<td class="bg-light-subtle text-center align-middle">创建时间</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<select class="form-control" v-model="searchSafePerson.createTime">
+							<option value="" selected>--选择--</option>
+							<option value="today">今天</option>
+							<option value="yesterday">昨天</option>
+							<option value="lastSevenDay">最近7天</option>
+							<option value="lastThirtyDay">最近30天</option>
+							<option value="currentMonth">本月</option>
+							<option value="lastMonth">上月</option>
+							<option value="define">自定义</option>
+						</select>
+					</td>
+					<td class="bg-light-subtle text-center align-middle">更新时间</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<select class="form-control" v-model="searchSafePerson.createTime">
+							<option value="" selected>--选择--</option>
+							<option value="today">今天</option>
+							<option value="yesterday">昨天</option>
+							<option value="lastSevenDay">最近7天</option>
+							<option value="lastThirtyDay">最近30天</option>
+							<option value="currentMonth">本月</option>
+							<option value="lastMonth">上月</option>
+							<option value="define">自定义</option>
+						</select>
+					</td>
+					<td class="bg-light-subtle text-center align-middle">状态</td>
+					<td class="bg-light-subtle text-center align-middle">
+						<input type="radio" name="status" value="1" class="form-check-inline"
+							v-model="searchSafePerson.status">正常&nbsp;
+						<input type="radio" name="status" value="0" class="form-check-inline"
+							v-model="searchSafePerson.status">隐藏
+					</td>
+					<td colspan="2" class="bg-light-subtle text-center align-middle">
+						<button class="btn btn-success" @click="search()">提交</button>
+						<button class="btn btn-secondary" @click="reset()">重置</button>
+					</td>
+				</tr>
+			</table>
+			<!-- 功能 -->
 			<div class="py-3">
 				<button class="btn btn-sm btn-dark" @click="refresh()">
 					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
@@ -28,7 +89,11 @@
 				<button class="btn btn-sm btn-primary" @click="more()">
 					<i class="fa fa-download"></i>&nbsp;&nbsp;更多
 				</button>
+				<button class="btn btn-sm btn-info" @click="searchBox()">
+					<i class="fa fa-search"></i>&nbsp;&nbsp;搜索
+				</button>
 			</div>
+			<!-- 显示 -->
 			<div class="card shadow">
 				<table class="table table-bordered">
 					<tr class="text-center">
@@ -108,6 +173,7 @@
 				el: "#app",
 				data: {
 					selectAll: false,
+					isShowSearchBox: false,
 					pageUtil: {
 						safePersonList: null,
 						dataCount: null,
@@ -116,8 +182,26 @@
 						pageNumber: null,
 						beginIndex: 1,
 					},
+					searchSafePerson: {
+						id: "",
+						safeNick: "",
+						SafeName: "",
+						safePhone: "",
+						status: "",
+						createTime: "",
+						updateTime: "",
+					},
 				},
 				methods: {
+					searchBox: function() {
+						this.isShowSearchBox = !this.isShowSearchBox;
+					},
+					search: function() {
+						alert("待实现");
+					},
+					reset: function() {
+						app.searchSafePerson = "";
+					},
 					refresh: function() {
 						location.href = "safePersonShowAll.html";
 					},

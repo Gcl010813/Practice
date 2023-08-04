@@ -50,18 +50,19 @@
 	</head>
 	<body>
 		<div id="app" class="d-flex flex-column">
-			<table class="table table-bordered col-6">
+			<!-- 搜索 -->
+			<table class="table table-bordered col-6" v-show="isShowSearchBox">
 				<tr class="text-center">
-					<td class="align-middle">ID</td>
-					<td>
+					<td class="bg-light-subtle text-center align-middle">ID</td>
+					<td class="bg-light-subtle text-center align-middle">
 						<input type="number" class="form-control" placeholder="ID" v-model="searchCom.id">
 					</td>
-					<td class="align-middle">小区名称</td>
-					<td>
+					<td class="bg-light-subtle text-center align-middle">小区名称</td>
+					<td class="bg-light-subtle text-center align-middle">
 						<input type="text" class="form-control" placeholder="小区名称" v-model="searchCom.comName">
 					</td>
-					<td class="align-middle">商铺类型</td>
-					<td>
+					<td class="bg-light-subtle text-center align-middle">商铺类型</td>
+					<td class="bg-light-subtle text-center align-middle">
 						<select class="form-control" v-model="searchCom.comType">
 							<option value="" selected>--选择--</option>
 							<option value="住宅">住宅</option>
@@ -69,8 +70,8 @@
 							<option value="别墅">别墅</option>
 						</select>
 					</td>
-					<td class="align-middle">创建时间</td>
-					<td>
+					<td class="bg-light-subtle text-center align-middle">创建时间</td>
+					<td class="bg-light-subtle text-center align-middle">
 						<select class="form-control" v-model="searchCom.createTime">
 							<option value="" selected>--选择--</option>
 							<option value="today">今天</option>
@@ -84,8 +85,8 @@
 					</td>
 				</tr>
 				<tr class="text-center">
-					<td class="align-middle">更新时间</td>
-					<td>
+					<td class="bg-light-subtle text-center align-middle">更新时间</td>
+					<td class="bg-light-subtle text-center align-middle">
 						<select class="form-control" v-model="searchCom.updateTime">
 							<option value="" selected>--选择--</option>
 							<option value="today">今天</option>
@@ -97,14 +98,13 @@
 							<option value="define">自定义</option>
 						</select>
 					</td>
-					<td colspan="6">
+					<td colspan="6" class="bg-light-subtle text-center align-middle">
 						<button class="btn btn-success" @click="search()">提交</button>
 						<button class="btn btn-secondary" @click="reset()">重置</button>
 					</td>
 				</tr>
 			</table>
-
-
+			<!-- 功能 -->
 			<div class="py-3">
 				<button class="btn btn-sm btn-dark" @click="refresh()">
 					<i class="fa fa-refresh"></i>&nbsp;&nbsp;刷新
@@ -121,7 +121,11 @@
 				<button class="btn btn-sm btn-primary" @click="setting()">
 					<i class="fa fa-list"></i>&nbsp;&nbsp;批量设置安检人员
 				</button>
+				<button class="btn btn-sm btn-info" @click="searchBox()">
+					<i class="fa fa-search"></i>&nbsp;&nbsp;搜索
+				</button>
 			</div>
+			<!-- 显示 -->
 			<div class="card shadow">
 				<table class="table table-bordered">
 					<tr class="text-center">
@@ -181,7 +185,7 @@
 					</li>
 				</ul>
 			</div>
-			<!-- 悬浮框 -->
+			<!-- 悬浮框(无法实现) -->
 			<!-- 			<div v-if="isShowAdd" class="modal-overlay">
 				<div class="modal-container col-5 h-50">
 					<div class="modal-content">
@@ -199,9 +203,14 @@
 			var app = new Vue({
 				el: "#app",
 				data: {
+					/* 悬浮框相关(无法实现) */
 					// isShowAdd: false,
 					// addHtml: "communityAdd.html",
+					/* 搜索框显示与隐藏 */
+					isShowSearchBox: false,
+					/* 全选 */
 					selectAll: false,
+					/* 搜索信息 */
 					searchCom: {
 						id: "",
 						comName: "",
@@ -209,6 +218,7 @@
 						createTime: "",
 						updateTime: ","
 					},
+					/* 分页数据信息 */
 					pageUtil: {
 						communityList: null,
 						dataCount: null,
@@ -219,12 +229,31 @@
 					},
 				},
 				methods: {
+					/* 悬浮框相关(无法实现) */
 					// showAddModal: function() {
 					// 	app.isShowAdd = true;
 					// },
 					// hideAddModal: function() {
 					// 	app.isShowAdd = false;
 					// },
+					/* 搜索框显示与隐藏 */
+					searchBox: function() {
+						this.isShowSearchBox = !this.isShowSearchBox;
+					},
+					/* 搜索 */
+					search: function() {
+						axios.post("/Community/communitySearch", Qs.stringify(this.searchCom)).then(function(
+							response) {
+							app.pageUtil.communityList = response.data;
+						}).catch(function(err) {
+							console.log(err);
+						})
+					},
+					/* 搜索信息重置 */
+					reset: function() {
+						app.searchCom = "";
+					},
+					/* 分页数据信息 */
 					showStudentPage: function(pageNumber) {
 						axios.get("/Community/communityShowAll?pageNumber=" + pageNumber).then(
 							function(res) {
@@ -245,9 +274,11 @@
 							console.log(err);
 						})
 					},
+					/* 重新加载页面 */
 					refresh: function() {
 						location.href = "communityShowAll.html";
 					},
+					/* 单个删除 */
 					remove: function(ids) {
 						const deleteFlag = confirm("确认删除?");
 						if (deleteFlag) {
@@ -263,13 +294,16 @@
 								})
 						}
 					},
+					/* 添加 */
 					add: function() {
 						location.href = "communityAdd.html";
 					},
+					/* 编辑 */
 					edit: function(id) {
 						localStorage.setItem("community_id", id);
 						location.href = "communityEdit.html";
 					},
+					/* 全选 */
 					selectAllRows: function() {
 						this.pageUtil.communityList.forEach(community => {
 							community.selected = this.selectAll;
@@ -278,6 +312,7 @@
 					updateSelectAll: function() {
 						this.selectAll = this.pageUtil.communityList.every(community => community.selected);
 					},
+					/* 批量删除 */
 					selectremove: function() {
 						const selectedCommunity = this.pageUtil.communityList.filter(community => community
 							.selected);
@@ -299,18 +334,6 @@
 									})
 							}
 						}
-					},
-					search: function() {
-						axios.post("/Community/communitySearch", Qs.stringify(this.searchCom)).then(function(
-							response) {
-							app.pageUtil.communityList = response.data;
-						}).catch(function(err) {
-							console.log(err);
-						})
-					},
-					reset: function() {
-						app.searchCom = "";
-						this.refresh();
 					},
 				},
 				created() {
